@@ -8,4 +8,4 @@ class Livro(models.Model):
         Categoria, on_delete=models.PROTECT, related_name="livros", null=True, blank=True
     )
     def __str__(self):
-        return f"({self.id}) {self.titulo} ({self.quantidade})"
+        return f"({self.id}) {self.titulo} ({self.quantidade})"b
