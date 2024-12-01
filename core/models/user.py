@@ -8,6 +8,7 @@ from django.contrib.auth.models import (
     PermissionsMixin,
 )
 from django.db import models
+from uploader.models import Image
 from django.utils.translation import gettext_lazy as _
 
 
@@ -80,3 +81,13 @@ class User(AbstractBaseUser, PermissionsMixin):
 
         verbose_name = "Usuário"
         verbose_name_plural = "Usuários"
+
+class User(AbstractUser):
+    foto = models.ForeignKey(
+        Image,
+        related_name="+",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        default=None,
+    )
