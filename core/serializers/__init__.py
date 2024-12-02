@@ -4,3 +4,4 @@ from .editora import EditoraSerializer
 from .autor import AutorSerializer
 from .livro import LivroListRetrieveSerializer, LivroSerializer
 from .livro import LivroListSerializer, LivroRetrieveSerializer, LivroSerializer
+from .compra import CompraSerializer

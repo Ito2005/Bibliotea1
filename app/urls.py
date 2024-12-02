@@ -8,6 +8,14 @@ from drf_spectacular.views import (
     SpectacularRedocView,
     SpectacularSwaggerView,
 )
+from core.views import (
+    AutorViewSet,
+    CategoriaViewSet,
+    CompraViewSet, # inclua essa linha
+    EditoraViewSet,
+    LivroViewSet,
+    UserViewSet,
+)
 from rest_framework.routers import DefaultRouter
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from uploader.router import router as uploader_router
@@ -20,6 +28,7 @@ router.register(r"categorias", CategoriaViewSet)
 router.register(r"editoras", EditoraViewSet)
 router.register(r"autores", AutorViewSet)
 router.register(r"livros", LivroViewSet)
+router.register(r"compras", CompraViewSet)
 
 urlpatterns = [
     path("admin/", admin.site.urls),
