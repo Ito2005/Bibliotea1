@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     "rest_framework",
     "rest_framework_simplejwt",
     "core",
+    "uploader", # nova linha
 ]
 
 MIDDLEWARE = [
@@ -111,6 +112,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 STATIC_URL = "static/"
+
 
 # App Uploader settings
 MEDIA_ENDPOINT = "/media/"
