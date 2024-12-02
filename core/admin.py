@@ -103,4 +103,3 @@ class CompraAdmin(admin.ModelAdmin):
     list_per_page = 25
     inlines = [ItensCompraInline]
 
-admin.site.register(Compra)
