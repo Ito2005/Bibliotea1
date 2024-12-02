@@ -60,6 +60,14 @@ class User(AbstractBaseUser, PermissionsMixin):
         verbose_name=_("name"),
         help_text=_("Username")
     )
+    foto = models.ForeignKey(
+        Image,
+        related_name="+",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        default=None,
+    )
     is_active = models.BooleanField(
         default=True,
         verbose_name=_("Usuário está ativo"),
@@ -82,12 +90,3 @@ class User(AbstractBaseUser, PermissionsMixin):
         verbose_name = "Usuário"
         verbose_name_plural = "Usuários"
 
-class User(AbstractUser):
-    foto = models.ForeignKey(
-        Image,
-        related_name="+",
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        default=None,
-    )
