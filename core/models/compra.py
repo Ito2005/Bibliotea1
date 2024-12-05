@@ -1,6 +1,8 @@
 from django.db import models
+
 from .livro import Livro
 from .user import User
+
 
 class Compra(models.Model):
     class StatusCompra(models.IntegerChoices):
