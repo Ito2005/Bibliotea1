@@ -1,8 +1,7 @@
 from rest_framework.viewsets import ModelViewSet
 
 from core.models import Compra
-
-from .serializers import (
+from core.serializers import (
     CompraCreateUpdateSerializer,
     CompraListSerializer,
     CompraSerializer,

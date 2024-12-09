@@ -1,6 +1,17 @@
-from rest_framework.serializers import CharField, ModelSerializer
-
 from core.models import Compra, ItensCompra
+from rest_framework.serializers import (
+    CharField,
+    CurrentUserDefault, # novo
+    HiddenField, # novo
+    ModelSerializer,
+    SerializerMethodField,
+)
+
+
+class ItensCompraCreateUpdateSerializer(ModelSerializer):
+    class Meta:
+        model = ItensCompra
+        fields = ("livro", "quantidade")
 
 
 class ItensCompraListSerializer(ModelSerializer):
@@ -12,33 +23,20 @@ class ItensCompraListSerializer(ModelSerializer):
         depth = 1
 
 
-class ItensCompraCreateUpdateSerializer(ModelSerializer):
+class ItensCompraSerializer(ModelSerializer):
+    total = SerializerMethodField()
+
+    def get_total(self, instance):
+        return instance.livro.preco * instance.quantidade
+
     class Meta:
         model = ItensCompra
-        fields = ("livro", "quantidade")
-
-
-class CompraSerializer(ModelSerializer):
-    fields = ("id", "usuario", "status", "total", "itens")
-    itens = ItensCompraSerializer(many=True, read_only=True)
-    usuario = CharField(source="usuario.email", read_only=True)  # inclua essa linha
-    status = CharField(source="get_status_display", read_only=True)  # inclua essa linha
-
-    class Meta:
-        model = Compra
-        fields = "__all__"
-
-
-class CompraListSerializer(ModelSerializer):
-    usuario = CharField(source="usuario.email", read_only=True)
-    itens = ItensCompraListSerializer(many=True, read_only=True)
-
-    class Meta:
-        model = Compra
-        fields = ("id", "usuario", "itens")
+        fields = ("quantidade", "total", "livro")
+        depth = 1
 
 
 class CompraCreateUpdateSerializer(ModelSerializer):
+    usuario = HiddenField(default=CurrentUserDefault())
     itens = ItensCompraCreateUpdateSerializer(many=True)  # Aqui mudou
 
     class Meta:
@@ -52,3 +50,22 @@ class CompraCreateUpdateSerializer(ModelSerializer):
             ItensCompra.objects.create(compra=compra, **item_data)
         compra.save()
         return compra
+
+
+class CompraListSerializer(ModelSerializer):
+    usuario = CharField(source="usuario.email", read_only=True)
+    itens = ItensCompraListSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Compra
+        fields = ("id", "usuario", "itens")
+
+
+class CompraSerializer(ModelSerializer):
+    itens = ItensCompraSerializer(many=True, read_only=True)
+    usuario = CharField(source="usuario.email", read_only=True)  # inclua essa linha
+    status = CharField(source="get_status_display", read_only=True)  # inclua essa linha
+
+    class Meta:
+        model = Compra
+        fields = ("id", "usuario", "status", "total", "itens")
