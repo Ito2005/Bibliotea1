@@ -1,12 +1,14 @@
-from core.models import Compra, ItensCompra
+from rest_framework.serializers import ValidationError  # novo
 from rest_framework.serializers import (
     CharField,
     CurrentUserDefault,
     HiddenField,
     ModelSerializer,
     SerializerMethodField,
-    ValidationError, # novo
 )
+
+from core.models import Compra, ItensCompra
+
 
 class ItensCompraCreateUpdateSerializer(ModelSerializer):
     class Meta:
@@ -20,11 +22,12 @@ class ItensCompraCreateUpdateSerializer(ModelSerializer):
 
     def validate_email(self, email):
         return email.lower()
-    
+
     def validate_quantidade(self, quantidade):
         if quantidade <= 0:
             raise ValidationError("A quantidade deve ser maior do que zero.")
         return quantidade
+
 
 class ItensCompraListSerializer(ModelSerializer):
     livro = CharField(source="livro.titulo", read_only=True)
@@ -56,12 +59,11 @@ class ItensCompraCreateUpdateSerializer(ModelSerializer):
         if quantidade <= 0:
             raise ValidationError("A quantidade deve ser maior do que zero.")
         return quantidade
-    
+
     def validate(self, item):
         if item["quantidade"] > item["livro"].quantidade:
             raise ValidationError("Quantidade de itens maior do que a quantidade em estoque.")
         return item
-
 
 
 class CompraListSerializer(ModelSerializer):
@@ -81,3 +83,20 @@ class CompraSerializer(ModelSerializer):
     class Meta:
         model = Compra
         fields = ("id", "usuario", "status", "total", "itens")
+
+
+class CompraCreateUpdateSerializer(ModelSerializer):
+    usuario = HiddenField(default=CurrentUserDefault())
+    itens = ItensCompraCreateUpdateSerializer(many=True)  # Aqui mudou
+
+    class Meta:
+        model = Compra
+        fields = ("usuario", "itens")
+
+    def update(self, compra, validated_data):
+        itens_data = validated_data.pop("itens")
+        if itens_data:
+            compra.itens.all().delete()
+            for item_data in itens_data:
+                ItensCompra.objects.create(compra=compra, **item_data)
+        return super().update(compra, validated_data)

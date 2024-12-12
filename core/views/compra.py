@@ -7,7 +7,6 @@ from core.serializers import (
     CompraSerializer,
 )
 
-# serializer_class = CompraSerializer
 
 class CompraViewSet(ModelViewSet):
     queryset = Compra.objects.all()
@@ -19,3 +18,10 @@ class CompraViewSet(ModelViewSet):
         if usuario.groups.filter(name="Administradores"):
             return Compra.objects.all()
         return Compra.objects.filter(usuario=usuario)
+
+    def get_serializer_class(self):
+        if self.action == "list":
+            return CompraListSerializer
+        if self.action in ("create", "update"):
+            return CompraCreateUpdateSerializer
+        return CompraSerializer

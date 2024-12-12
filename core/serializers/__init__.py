@@ -1,11 +1,11 @@
 from .autor import AutorSerializer
 from .categoria import CategoriaSerializer
-from .compra import CompraListSerializer  # novo
-from .compra import ItensCompraListSerializer  # novo
 from .compra import (
     CompraCreateUpdateSerializer,
+    CompraListSerializer,
     CompraSerializer,
     ItensCompraCreateUpdateSerializer,
+    ItensCompraListSerializer,
     ItensCompraSerializer,
 )
 from .editora import EditoraSerializer
