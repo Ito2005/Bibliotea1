@@ -47,21 +47,21 @@ class ItensCompraSerializer(ModelSerializer):
         depth = 1
 
 
-class CompraCreateUpdateSerializer(ModelSerializer):
-    usuario = HiddenField(default=CurrentUserDefault())
-    itens = ItensCompraCreateUpdateSerializer(many=True)  # Aqui mudou
-
+class ItensCompraCreateUpdateSerializer(ModelSerializer):
     class Meta:
-        model = Compra
-        fields = ("usuario", "itens")
+        model = ItensCompra
+        fields = ("livro", "quantidade")
 
-    def create(self, validated_data):
-        itens_data = validated_data.pop("itens")
-        compra = Compra.objects.create(**validated_data)
-        for item_data in itens_data:
-            ItensCompra.objects.create(compra=compra, **item_data)
-        compra.save()
-        return compra
+    def validate_quantidade(self, quantidade):
+        if quantidade <= 0:
+            raise ValidationError("A quantidade deve ser maior do que zero.")
+        return quantidade
+    
+    def validate(self, item):
+        if item["quantidade"] > item["livro"].quantidade:
+            raise ValidationError("Quantidade de itens maior do que a quantidade em estoque.")
+        return item
+
 
 
 class CompraListSerializer(ModelSerializer):
