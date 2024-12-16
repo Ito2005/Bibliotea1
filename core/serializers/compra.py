@@ -2,10 +2,11 @@ from rest_framework.serializers import ValidationError  # novo
 from rest_framework.serializers import (
     CharField,
     CurrentUserDefault,
+    DateTimeField, # novo
     HiddenField,
     ModelSerializer,
     SerializerMethodField,
-    ValidationError, # novo
+    ValidationError,
 )
 
 from core.models import Compra, ItensCompra
@@ -82,13 +83,14 @@ class CompraListSerializer(ModelSerializer):
 
 
 class CompraSerializer(ModelSerializer):
+    usuario = CharField(source="usuario.email", read_only=True)
+    status = CharField(source="get_status_display", read_only=True)
+    data = DateTimeField(read_only=True) # novo campo
     itens = ItensCompraSerializer(many=True, read_only=True)
-    usuario = CharField(source="usuario.email", read_only=True)  # inclua essa linha
-    status = CharField(source="get_status_display", read_only=True)  # inclua essa linha
 
     class Meta:
         model = Compra
-        fields = ("id", "usuario", "status", "total", "itens")
+        fields = ("id", "usuario", "status", "total", "data", "itens") # modificado
 
 
 class CompraCreateUpdateSerializer(ModelSerializer):
@@ -106,3 +108,12 @@ class CompraCreateUpdateSerializer(ModelSerializer):
             for item_data in itens_data:
                 ItensCompra.objects.create(compra=compra, **item_data)
         return super().update(compra, validated_data)
+
+    def create(self, validated_data):
+        itens = validated_data.pop("itens")
+        compra = Compra.objects.create(**validated_data)
+        for item in itens:
+            item["preco"] = item["livro"].preco # nova linha
+            ItensCompra.objects.create(compra=compra, **item)
+        compra.save()
+        return compra
