@@ -1,7 +1,5 @@
+from datetime import datetime
 from django.db import models
-
-from rest_framework.serializers import CharField, ModelSerializer, SerializerMethodField
-
 from .livro import Livro
 from .user import User
 
@@ -26,10 +24,16 @@ class Compra(models.Model):
     status = models.IntegerField(choices=StatusCompra.choices, default=StatusCompra.CARRINHO)
     data = models.DateTimeField(auto_now_add=True) # campo novo
     tipo_pagamento = models.IntegerField(choices=TipoPagamento.choices, default=TipoPagamento.CARTAO_CREDITO)
+    total = models.DecimalField(max_digits=10, decimal_places=2, default=0)  # Campo total
 
-    @property
-    def total(self):
-        return sum(item.preco * item.quantidade for item in self.itens.all())
+    def save(self, *args, **kwargs):
+        if self.pk:
+            self.total = sum(item.preco * item.quantidade for item in self.itens.all())
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"({self.id}) {self.usuario} {self.get_status_display()} {self.total}"
+
 
 class CompraSerializer(ModelSerializer):
     usuario = CharField(source="usuario.email", read_only=True)

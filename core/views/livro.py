@@ -1,25 +1,28 @@
+from django.db.models.aggregates import Sum
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
-from django.db.models.aggregates import Sum
-from django_filters.rest_framework import DjangoFilterBackend
+
 from core.models import Livro
 from core.serializers import (
+    LivroAjustarEstoqueSerializer,
     LivroAlterarPrecoSerializer,
     LivroListSerializer,
     LivroRetrieveSerializer,
     LivroSerializer,
 )
 
-
-class LivroViewSet(viewsets.ModelViewSet):
-    queryset = Livro.objects.all()
-    serializer_class = LivroSerializer
-    filter_backends = [DjangoFilterBackend]
+class LivroViewSet(ModelViewSet):
+    queryset = Livro.objects.order_by("-id")
+    filter_backends = [DjangoFilterBackend, OrderingFilter, SearchFilter]
     filterset_fields = ["categoria__descricao", "editora__nome"]
-
+    search_fields = ["titulo"]
+    ordering_fields = ["titulo", "preco"]
+    ordering = ["titulo"]
+    
     def get_serializer_class(self):
         if self.action == "list":
             return LivroListSerializer

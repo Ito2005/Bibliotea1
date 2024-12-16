@@ -1,9 +1,12 @@
-from rest_framework.viewsets import ModelViewSet
 from django.db import transaction
+from django.utils import timezone
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status
 from rest_framework.decorators import action
+from rest_framework.filters import OrderingFilter, SearchFilter
 from rest_framework.response import Response
-from core.models import Compra
+from rest_framework.viewsets import ModelViewSet
+from core.models import Compra, User
 from core.serializers import (
     CompraCreateUpdateSerializer,
     CompraListSerializer,
@@ -12,14 +15,20 @@ from core.serializers import (
 
 
 class CompraViewSet(ModelViewSet):
-    queryset = Compra.objects.all()
+    filter_backends = [DjangoFilterBackend, OrderingFilter, SearchFilter]
+    filterset_fields = ["usuario__email", "status", "data"]
+    search_fields = ["usuario__email"]
+    ordering_fields = ["usuario__email", "status", "data"]
+    ordering = ["-data"]
 
     def get_queryset(self):
         usuario = self.request.user
         if usuario.is_superuser:
-            return Compra.objects.all()
-        if usuario.groups.filter(name="Administradores"):
-            return Compra.objects.all()
+            return Compra.objects.order_by("-id")
+        if usuario.groups.filter(name="administradores"):
+            return Compra.objects.order_by("-id")
+        if usuario.tipo_usuario == User.TipoUsuario.GERENTE:
+            return Compra.objects.order_by("-id")
         return Compra.objects.filter(usuario=usuario)
 
     def get_serializer_class(self):
@@ -41,7 +50,6 @@ class CompraViewSet(ModelViewSet):
 
         with transaction.atomic():
             for item in compra.itens.all():
-
                 if item.quantidade > item.livro.quantidade:
                     return Response(
                         status=status.HTTP_400_BAD_REQUEST,
@@ -59,7 +67,7 @@ class CompraViewSet(ModelViewSet):
             compra.save()
 
         return Response(status=status.HTTP_200_OK, data={"status": "Compra finalizada"})
-    
+
     @action(detail=False, methods=["get"])
     def relatorio_vendas_mes(self, request):
         agora = timezone.now()
