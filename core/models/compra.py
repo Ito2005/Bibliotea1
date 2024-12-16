@@ -35,31 +35,8 @@ class Compra(models.Model):
         return f"({self.id}) {self.usuario} {self.get_status_display()} {self.total}"
 
 
-class CompraSerializer(ModelSerializer):
-    usuario = CharField(source="usuario.email", read_only=True)
-    status = CharField(source="get_status_display", read_only=True)
-    data = DateTimeField(read_only=True)
-    tipo_pagamento = CharField(source="get_tipo_pagamento_display", read_only=True) # novo campo
-    itens = ItensCompraSerializer(many=True, read_only=True)
-
-    class Meta:
-        model = Compra
-        fields = ("id", "usuario", "status", "total", "data", "tipo_pagamento", "itens") # modificado
-
 class ItensCompra(models.Model):
     compra = models.ForeignKey(Compra, on_delete=models.CASCADE, related_name="itens")
-    livro = models.ForeignKey(Livro, on_delete=models.PROTECT, related_name="itens_compra")
+    livro = models.ForeignKey(Livro, on_delete=models.PROTECT, related_name="itenscompra")
     quantidade = models.IntegerField(default=1)
-    preco = models.DecimalField(max_digits=10, decimal_places=2, default=0)
-
-
-class ItensCompraSerializer(ModelSerializer):
-    total = SerializerMethodField()
-
-    def get_total(self, instance):
-        return instance.livro.preco * instance.quantidade
-
-    class Meta:
-        model = ItensCompra
-        fields = ("livro", "quantidade", "total")
-        depth = 1
+    preco = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True, default=0)
